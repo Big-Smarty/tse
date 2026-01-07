@@ -4,6 +4,8 @@ use crate::message::{log::LogMessage, qr::QRMessage};
 
 mod message;
 
+// TODO: GROßGESCHRIEBENE HEXADEZIMALZAHLEN
+
 static DATA: &'static str = "V0;NAMOS-00ND180490-001;Kassenbeleg-V1;
 Beleg^15,45_0,00_0,00_0,00_0,00_0,00_0,00^15,45:Unbar;
 281331;628393;
@@ -20,17 +22,27 @@ D1gqsHE8u/rdNlMtnEXqcBo5/zE/oK8t2CXg==";
 
 fn main() {
     let qr = QRMessage::new(DATA.to_string());
+    println!("QR Message debug output:");
     println!("{qr:?}");
-    let log = LogMessage::from(qr);
+    println!("Log Message debug output:");
+    let log = LogMessage::from(qr.clone());
     println!("{log}");
 
     println!("log hash:");
     println!(
         "{}",
-        sha2::Sha384::digest(log.to_string())
+        sha2::Sha384::digest(log.as_bytes())
             .to_vec()
             .iter()
-            .map(|x| format!("{x:x}"))
+            .map(|x| format!("{x:X}"))
             .collect::<String>(),
     );
+
+    let (dx, dy) = qr.dxdy();
+
+    println!("dx:\n{dx}\ndy:\n{dy}");
+
+    let (r, s) = qr.rs();
+
+    println!("r:\n{r}\ns:\n{s}");
 }

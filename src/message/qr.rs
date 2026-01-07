@@ -1,4 +1,4 @@
-use base64::{alphabet::BIN_HEX, prelude::*};
+use base64::prelude::*;
 use std::fmt::Display;
 
 #[derive(Clone, Debug)]
@@ -41,6 +41,37 @@ impl QRMessage {
             pubkey: BASE64_STANDARD.decode(splits[10].clone()).unwrap(),
         }
     }
+
+    pub fn dxdy(&self) -> (String, String) {
+        // Ensure we have the correct length for a P-384 uncompressed key
+        // 1 (prefix) + 48 (Dx) + 48 (Dy) = 97 bytes
+        if self.pubkey.len() != 97 {
+            panic!(
+                "Unexpected public key length: {}. Expected 97 bytes for P-384.",
+                self.pubkey.len()
+            );
+        }
+
+        // Skip the 0x04 prefix byte
+        let coordinates = &self.pubkey[1..];
+
+        // Split into two 48-byte halves
+        let dx_bytes = &coordinates[..48];
+        let dy_bytes = &coordinates[48..];
+
+        // Convert bytes to hex strings
+        let dx = hex::encode(dx_bytes);
+        let dy = hex::encode(dy_bytes);
+
+        (dx, dy)
+    }
+
+    pub fn rs(&self) -> (String, String) {
+        let (r, s) = self.signature.split_at(self.signature.len() / 2);
+        let (r, s) = (r.to_string(), s.to_string());
+
+        (r, s)
+    }
 }
 
 impl Display for QRMessage {
@@ -55,6 +86,6 @@ impl Display for QRMessage {
         writeln!(f, "{}", self.crypto_suite)?;
         writeln!(f, "{}", self.time_format)?;
         writeln!(f, "{}", self.signature)?;
-        writeln!(f, "{:x?}", self.pubkey)
+        writeln!(f, "{:X?}", self.pubkey)
     }
 }
