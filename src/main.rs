@@ -4,7 +4,7 @@ use crate::message::{log::LogMessage, qr::QRMessage};
 
 mod message;
 
-// TODO: GROßGESCHRIEBENE HEXADEZIMALZAHLEN
+// TODO: Hexadezimalzahlen großschreiben
 
 static DATA: &'static str = "V0;NAMOS-00ND180490-001;Kassenbeleg-V1;
 Beleg^15,45_0,00_0,00_0,00_0,00_0,00_0,00^15,45:Unbar;

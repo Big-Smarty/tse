@@ -1,14 +1,22 @@
-# Wie kann ich das Ding benutzen?
-In der Datei src/main.rs ist eine Variable namens DATA. Dort steht zurzeit meine QR-Message drin. Man kann den Inhalt des Strings einfach löschen und seine eigene QR-Message reinschreiben.
-Anschließend benutzt man einen IDE wie RustRover oder Visual Studio Code um es auszuführen oder man macht es im Terminal wie folgt:
+# TSE-Verifikation
 
-`cargo run`
+Universitätsprojekt in Rust: prüft die Angaben einer TSE-QR-Nachricht (Kassenbon). Verifiziert werden der öffentliche Schlüssel (ECC-Pubkey) und die ECDSA-Signatur auf den Kurven NIST P-384 (secp384r1) und brainpoolP384r1. Zur Kontrolle der Ergebnisse liegen zwei PARI/GP-Skripte bei.
 
-Großes Dankeschön an Martin für seine starke Mithilfe!!
+## Benutzung
 
-Pubkey Überprüfung:
+Die zu prüfende QR-Nachricht steht als `DATA`-String in `src/main.rs`. Aktuell ist dort eine Beispiel-Nachricht hinterlegt. Den Inhalt des Strings durch die eigene QR-Nachricht ersetzen und das Programm ausführen:
 
+```sh
+cargo run
 ```
+
+Alternativ lässt sich das Projekt aus einer IDE wie RustRover oder Visual Studio Code heraus starten.
+
+## Überprüfung des öffentlichen Schlüssels
+
+Die Koordinaten des PubKeys werden auf beiden Kurven geprüft. Die folgende PARI/GP-Session zeigt das:
+
+```gp
 ? \\ 1. Koordinaten als Hexadezimalzahlen definieren
 ? dx = 0x80991a288ea13cc52f41a835dc1f929be1ba8e7a6cd5f37a46da71e789081fc5b5d0f93c58d3577fd6aac70d4d28effa;
 ? dy = 0x58600414a3b3406bc4d75609f5c5fd1f0b4c598631f0f582ab0713cbbfadd36532d9c45ea701a39ff313fa0af2dd825e;
@@ -31,9 +39,13 @@ Punkt auf brainpoolP384r1? 1
 ?
 ```
 
-Signaturprüfung:
+Der PubKey liegt demnach auf brainpoolP384r1, nicht auf secp384r1.
 
-```
+## Signaturprüfung
+
+Die ECDSA-Signatur wird auf brainpoolP384r1 geprüft. Das Skript berechnet den SHA-384-Hash der Log-Nachricht, wendet die ECDSA-Verifikation an und vergleicht die x-Koordinate des Ergebnisses mit `r`:
+
+```gp
 p = 0x8cb91e82a3386d280f5d6f7e50e641df152f7109ed5456b412b1da197fb71123acd3a729901d1a71874700133107ec53;
 a = 0x7bc382c63d8c150c3c72080ace05afa0c2bea28e4fb22787139165efba91f90f8aa5814a503ad4eb04a8c7dd22ce2826;
 b = 0x4a8c7dd22ce28268b39b55416f0447c2fb77de107dcd2a62e880ea53eeb62d57cb4390295dbc9943ab78696fa504c11;
@@ -67,3 +79,7 @@ print("Signatur gültig? ", Mod(L[1], n) == r);
 
 Signatur gültig? 1
 ```
+
+## Danksagung
+
+Vielen Dank an Martin für seine Unterstützung bei diesem Projekt.
